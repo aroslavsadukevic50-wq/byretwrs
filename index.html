@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Практическая работа №1 — BOM, DOM, навигация и поиск</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        h1, h2 { color: #2c3e50; }
+        section { border: 1px solid #ccc; padding: 12px; margin-bottom: 16px; border-radius: 6px; }
+        .box { background: #f0f8ff; padding: 8px; margin: 6px 0; border-left: 4px solid #3498db; }
+        button { padding: 6px 12px; margin: 4px; cursor: pointer; }
+        code { background: #eee; padding: 2px 5px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<h1>Практическая работа №1</h1>
+<p>Раздел 1. BOM, DOM, навигация и поиск</p>
+
+<section id="bom-section">
+    <h2>1. Окно и страница (BOM)</h2>
+
+    <div class="box">
+        <p><b>location.href:</b> <span id="out-href"></span></p>
+        <p><b>location.pathname:</b> <span id="out-pathname"></span></p>
+        <p><b>location.host:</b> <span id="out-host"></span></p>
+        <p><b>location.protocol:</b> <span id="out-protocol"></span></p>
+        <p><b>navigator.userAgent:</b> <span id="out-ua"></span></p>
+        <p><b>screen.width × screen.height:</b> <span id="out-screen"></span></p>
+    </div>
+
+    <button onclick="showBOM()">Показать данные BOM</button>
+    <button onclick="goToLibrary()">Перейти на /library (location.href)</button>
+</section>
+
+<section id="dom-nav">
+    <h2>2. Навигация по DOM</h2>
+
+    <div id="parent" class="box">
+        <p id="first-child">Первый дочерний элемент</p>
+        <p id="middle-child">Средний дочерний элемент</p>
+        <p id="last-child">Последний дочерний элемент</p>
+    </div>
+
+    <button onclick="demoNavigation()">Показать навигацию (parent/child/sibling)</button>
+    <div id="nav-result" class="box" style="display:none;"></div>
+</section>
+
+
+<section id="dom-search">
+    <h2>3. Поиск элементов в DOM</h2>
+
+    <ul id="list">
+        <li class="item">Элемент 1</li>
+        <li class="item active">Элемент 2</li>
+        <li class="item">Элемент 3</li>
+    </ul>
+
+    <form id="my-form">
+        <input type="text" name="username" placeholder="Имя">
+        <input type="email" name="email" placeholder="Email">
+        <button type="submit">Отправить</button>
+    </form>
+
+    <button onclick="demoSearch()">Продемонстрировать поиск</button>
+    <div id="search-result" class="box" style="display:none;"></div>
+</section>
+
+<script>
+
+function showBOM() {
+    document.getElementById('out-href').textContent     = location.href;
+    document.getElementById('out-pathname').textContent = location.pathname;
+    document.getElementById('out-host').textContent     = location.host || '(нет)';
+    document.getElementById('out-protocol').textContent = location.protocol;
+    document.getElementById('out-ua').textContent       = navigator.userAgent;
+    document.getElementById('out-screen').textContent   =
+        screen.width + ' × ' + screen.height;
+
+    console.log('=== BOM ===');
+    console.log('href:', location.href);
+    console.log('pathname:', location.pathname);
+    console.log('host:', location.host);
+    console.log('protocol:', location.protocol);
+    console.log('userAgent:', navigator.userAgent);
+    console.log('screen:', screen.width, screen.height);
+}
+
+
+function goToLibrary() {
+
+    alert('Вызов location.href = "/library" — переход на путь /library.\n' +
+          'Сейчас текущий pathname: ' + location.pathname);
+    // Демонстрационно меняем только хэш, чтобы не уходить со страницы:
+    location.hash = 'library';
+}
+
+function demoNavigation() {
+    const parent    = document.getElementById('parent');
+    const first     = document.getElementById('first-child');
+    const middle    = document.getElementById('middle-child');
+    const last      = document.getElementById('last-child');
+
+    const result = [];
+
+    
+    result.push('parent (первого) → id = ' + first.parentElement.id);
+
+ 
+    result.push('parent.children.length = ' + parent.children.length);
+    result.push('parent.childNodes.length (с текстовыми узлами) = ' + parent.childNodes.length);
+
+    result.push('parent.firstElementChild.id = ' + parent.firstElementChild.id);
+    result.push('parent.lastElementChild.id = ' + parent.lastElementChild.id);
+
+   
+    result.push('middle.nextElementSibling.id = ' + middle.nextElementSibling.id);
+    result.push('middle.previousElementSibling.id = ' + middle.previousElementSibling.id);
+    result.push('last.nextElementSibling = ' + last.nextElementSibling);
+
+    const box = document.getElementById('nav-result');
+    box.style.display = 'block';
+    box.innerHTML = '<b>Результат навигации:</b><br>' + result.join('<br>');
+
+    console.log('=== DOM Navigation ===');
+    result.forEach(r => console.log(r));
+}
+
+
+function demoSearch() {
+    const result = [];
+
+    
+    const list = document.getElementById('list');
+    result.push('getElementById("list") → ' + list.tagName);
+
+    
+    const active = document.querySelector('.item.active');
+    result.push('querySelector(".item.active") → ' + active.textContent);
+
+    const items = document.querySelectorAll('.item');
+    result.push('querySelectorAll(".item").length = ' + items.length);
+
+    
+    const byClass = document.getElementsByClassName('item');
+    result.push('getElementsByClassName("item").length = ' + byClass.length);
+
+    const byTag = document.getElementsByTagName('li');
+    result.push('getElementsByTagName("li").length = ' + byTag.length);
+
+
+    const form = document.getElementById('my-form');
+    const input = form.querySelector('input[name="username"]');
+    result.push('form.querySelector(input[name="username"]) → ' +
+                (input ? input.placeholder : 'не найдено'));
+
+    
+    result.push('active.closest("ul").id = ' + active.closest('ul').id);
+
+    const box = document.getElementById('search-result');
+    box.style.display = 'block';
+    box.innerHTML = '<b>Результат поиска:</b><br>' + result.join('<br>');
+
+    console.log('=== DOM Search ===');
+    result.forEach(r => console.log(r));
+}
+
+
+window.addEventListener('load', () => {
+    showBOM();
+    demoNavigation();
+    demoSearch();
+});
+</script>
+
+</body>
+</html>
