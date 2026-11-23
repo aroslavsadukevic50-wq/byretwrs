@@ -2,174 +2,206 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Практическая работа №1 — BOM, DOM, навигация и поиск</title>
+    <title>Практическая работа №2 — События, формы, создание элементов</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
         h1, h2 { color: #2c3e50; }
         section { border: 1px solid #ccc; padding: 12px; margin-bottom: 16px; border-radius: 6px; }
-        .box { background: #f0f8ff; padding: 8px; margin: 6px 0; border-left: 4px solid #3498db; }
+        .box { background: #f9f9f9; padding: 10px; margin: 8px 0; border-left: 4px solid #27ae60; }
         button { padding: 6px 12px; margin: 4px; cursor: pointer; }
-        code { background: #eee; padding: 2px 5px; border-radius: 3px; }
+        input { padding: 4px; margin: 4px 0; }
+        .error { color: red; font-size: 0.9em; }
+        .success { color: green; font-size: 0.9em; }
+        .highlight { background: yellow; padding: 2px; }
+        #dynamic-list li { margin: 4px 0; }
     </style>
 </head>
 <body>
 
-<h1>Практическая работа №1</h1>
-<p>Раздел 1. BOM, DOM, навигация и поиск</p>
+<h1>Практическая работа №2</h1>
+<p>Раздел 2. События, работа с формами, создание и удаление элементов DOM</p>
 
-<section id="bom-section">
-    <h2>1. Окно и страница (BOM)</h2>
+<section id="events-section">
+    <h2>1. Обработка событий (click, mouseover, keyup)</h2>
 
-    <div class="box">
-        <p><b>location.href:</b> <span id="out-href"></span></p>
-        <p><b>location.pathname:</b> <span id="out-pathname"></span></p>
-        <p><b>location.host:</b> <span id="out-host"></span></p>
-        <p><b>location.protocol:</b> <span id="out-protocol"></span></p>
-        <p><b>navigator.userAgent:</b> <span id="out-ua"></span></p>
-        <p><b>screen.width × screen.height:</b> <span id="out-screen"></span></p>
+    <div class="box" id="event-box" style="background:#eee; padding:20px; text-align:center;">
+        Наведи или кликни сюда
     </div>
+    <p>Статус: <span id="event-status">—</span></p>
 
-    <button onclick="showBOM()">Показать данные BOM</button>
-    <button onclick="goToLibrary()">Перейти на /library (location.href)</button>
+    <input type="text" id="key-input" placeholder="Начни печатать...">
+    <p>Последняя нажатая клавиша: <span id="key-status">—</span></p>
+
+    <button onclick="demoClick()">Симулировать click</button>
 </section>
 
-<section id="dom-nav">
-    <h2>2. Навигация по DOM</h2>
+<section id="form-section">
+    <h2>2. Форма и валидация данных</h2>
 
-    <div id="parent" class="box">
-        <p id="first-child">Первый дочерний элемент</p>
-        <p id="middle-child">Средний дочерний элемент</p>
-        <p id="last-child">Последний дочерний элемент</p>
-    </div>
+    <form id="reg-form" onsubmit="return validateForm(event)">
+        <label>Имя (мин. 3 символа):<br>
+            <input type="text" id="name" name="name">
+        </label><br>
+        <span id="name-error" class="error"></span><br>
 
-    <button onclick="demoNavigation()">Показать навигацию (parent/child/sibling)</button>
-    <div id="nav-result" class="box" style="display:none;"></div>
-</section>
+        <label>Email:<br>
+            <input type="email" id="email" name="email">
+        </label><br>
+        <span id="email-error" class="error"></span><br>
 
+        <label>Пароль (мин. 6 символов):<br>
+            <input type="password" id="password" name="password">
+        </label><br>
+        <span id="password-error" class="error"></span><br>
 
-<section id="dom-search">
-    <h2>3. Поиск элементов в DOM</h2>
-
-    <ul id="list">
-        <li class="item">Элемент 1</li>
-        <li class="item active">Элемент 2</li>
-        <li class="item">Элемент 3</li>
-    </ul>
-
-    <form id="my-form">
-        <input type="text" name="username" placeholder="Имя">
-        <input type="email" name="email" placeholder="Email">
         <button type="submit">Отправить</button>
     </form>
 
-    <button onclick="demoSearch()">Продемонстрировать поиск</button>
-    <div id="search-result" class="box" style="display:none;"></div>
+    <div id="form-result" class="box" style="display:none;"></div>
+</section>
+
+
+<section id="create-section">
+    <h2>3. Создание, добавление и удаление элементов</h2>
+
+    <input type="text" id="item-text" placeholder="Новый элемент списка">
+    <button onclick="addItem()">Добавить</button>
+    <button onclick="clearList()">Очистить список</button>
+
+    <ul id="dynamic-list">
+        <li>Существующий элемент <button onclick="removeItem(this)">×</button></li>
+    </ul>
+
+    <p>Элементов в списке: <span id="item-count">1</span></p>
 </section>
 
 <script>
 
-function showBOM() {
-    document.getElementById('out-href').textContent     = location.href;
-    document.getElementById('out-pathname').textContent = location.pathname;
-    document.getElementById('out-host').textContent     = location.host || '(нет)';
-    document.getElementById('out-protocol').textContent = location.protocol;
-    document.getElementById('out-ua').textContent       = navigator.userAgent;
-    document.getElementById('out-screen').textContent   =
-        screen.width + ' × ' + screen.height;
+const eventBox = document.getElementById('event-box');
+const eventStatus = document.getElementById('event-status');
+const keyInput = document.getElementById('key-input');
+const keyStatus = document.getElementById('key-status');
 
-    console.log('=== BOM ===');
-    console.log('href:', location.href);
-    console.log('pathname:', location.pathname);
-    console.log('host:', location.host);
-    console.log('protocol:', location.protocol);
-    console.log('userAgent:', navigator.userAgent);
-    console.log('screen:', screen.width, screen.height);
+eventBox.addEventListener('click', () => {
+    eventStatus.textContent = 'Клик по блоку! (click)';
+    eventStatus.className = 'success';
+    console.log('=== Event: click ===');
+});
+
+
+eventBox.addEventListener('mouseover', () => {
+    eventBox.style.background = '#d4edda';
+    eventStatus.textContent = 'Курсор внутри блока (mouseover)';
+    console.log('=== Event: mouseover ===');
+});
+
+eventBox.addEventListener('mouseout', () => {
+    eventBox.style.background = '#eee';
+    eventStatus.textContent = 'Курсор вышел (mouseout)';
+    console.log('=== Event: mouseout ===');
+});
+
+
+keyInput.addEventListener('keyup', (e) => {
+    keyStatus.textContent = e.key;
+    console.log('=== Event: keyup, key =', e.key, '===');
+});
+
+function demoClick() {
+    eventBox.click(); 
 }
 
 
-function goToLibrary() {
+function validateForm(event) {
+    event.preventDefault(); 
 
-    alert('Вызов location.href = "/library" — переход на путь /library.\n' +
-          'Сейчас текущий pathname: ' + location.pathname);
-    // Демонстрационно меняем только хэш, чтобы не уходить со страницы:
-    location.hash = 'library';
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    let isValid = true;
+
+    
+    document.getElementById('name-error').textContent = '';
+    document.getElementById('email-error').textContent = '';
+    document.getElementById('password-error').textContent = '';
+
+    if (name.length < 3) {
+        document.getElementById('name-error').textContent = 'Имя должно быть не менее 3 символов';
+        isValid = false;
+    }
+
+    if (!email.includes('@') || !email.includes('.')) {
+        document.getElementById('email-error').textContent = 'Введите корректный email';
+        isValid = false;
+    }
+
+    if (password.length < 6) {
+        document.getElementById('password-error').textContent = 'Пароль должен быть не менее 6 символов';
+        isValid = false;
+    }
+
+    const result = document.getElementById('form-result');
+    result.style.display = 'block';
+
+    if (isValid) {
+        result.innerHTML = `<b class="success">✅ Форма прошла валидацию!</b><br>
+                            Имя: ${name}<br>Email: ${email}`;
+        console.log('=== Form: valid ===', { name, email, password });
+    } else {
+        result.innerHTML = `<b class="error">❌ Есть ошибки в форме. Проверьте поля.</b>`;
+        console.log('=== Form: invalid ===');
+    }
+
+    return false; 
 }
 
-function demoNavigation() {
-    const parent    = document.getElementById('parent');
-    const first     = document.getElementById('first-child');
-    const middle    = document.getElementById('middle-child');
-    const last      = document.getElementById('last-child');
-
-    const result = [];
-
-    
-    result.push('parent (первого) → id = ' + first.parentElement.id);
-
- 
-    result.push('parent.children.length = ' + parent.children.length);
-    result.push('parent.childNodes.length (с текстовыми узлами) = ' + parent.childNodes.length);
-
-    result.push('parent.firstElementChild.id = ' + parent.firstElementChild.id);
-    result.push('parent.lastElementChild.id = ' + parent.lastElementChild.id);
-
-   
-    result.push('middle.nextElementSibling.id = ' + middle.nextElementSibling.id);
-    result.push('middle.previousElementSibling.id = ' + middle.previousElementSibling.id);
-    result.push('last.nextElementSibling = ' + last.nextElementSibling);
-
-    const box = document.getElementById('nav-result');
-    box.style.display = 'block';
-    box.innerHTML = '<b>Результат навигации:</b><br>' + result.join('<br>');
-
-    console.log('=== DOM Navigation ===');
-    result.forEach(r => console.log(r));
+function updateCount() {
+    const list = document.getElementById('dynamic-list');
+    document.getElementById('item-count').textContent = list.children.length;
 }
 
+function addItem() {
+    const input = document.getElementById('item-text');
+    const text = input.value.trim();
 
-function demoSearch() {
-    const result = [];
-
-    
-    const list = document.getElementById('list');
-    result.push('getElementById("list") → ' + list.tagName);
-
-    
-    const active = document.querySelector('.item.active');
-    result.push('querySelector(".item.active") → ' + active.textContent);
-
-    const items = document.querySelectorAll('.item');
-    result.push('querySelectorAll(".item").length = ' + items.length);
+    if (text === '') {
+        alert('Введите текст элемента');
+        return;
+    }
 
     
-    const byClass = document.getElementsByClassName('item');
-    result.push('getElementsByClassName("item").length = ' + byClass.length);
-
-    const byTag = document.getElementsByTagName('li');
-    result.push('getElementsByTagName("li").length = ' + byTag.length);
-
-
-    const form = document.getElementById('my-form');
-    const input = form.querySelector('input[name="username"]');
-    result.push('form.querySelector(input[name="username"]) → ' +
-                (input ? input.placeholder : 'не найдено'));
+    const li = document.createElement('li');
+    li.innerHTML = `${text} <button onclick="removeItem(this)">×</button>`;
 
     
-    result.push('active.closest("ul").id = ' + active.closest('ul').id);
+    document.getElementById('dynamic-list').appendChild(li);
 
-    const box = document.getElementById('search-result');
-    box.style.display = 'block';
-    box.innerHTML = '<b>Результат поиска:</b><br>' + result.join('<br>');
 
-    console.log('=== DOM Search ===');
-    result.forEach(r => console.log(r));
+    input.value = '';
+    updateCount();
+
+    console.log('=== Element created ===', text);
+}
+
+function removeItem(btn) {
+    const li = btn.parentElement;
+    li.remove(); 
+    updateCount();
+    console.log('=== Element removed ===');
+}
+
+function clearList() {
+    const list = document.getElementById('dynamic-list');
+    list.innerHTML = ''; // очищаем весь список
+    updateCount();
+    console.log('=== List cleared ===');
 }
 
 
 window.addEventListener('load', () => {
-    showBOM();
-    demoNavigation();
-    demoSearch();
+    updateCount();
+    console.log('=== Практическая работа №2 загружена ===');
 });
 </script>
 
